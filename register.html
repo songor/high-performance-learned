@@ -55,7 +55,6 @@
 </body>
 
 <script>
-
     jQuery(document).ready(function () {
     	$("#register").on("click", function () {
     		var telephone = $("#telephone").val();
@@ -64,6 +63,30 @@
     		var password = $("#password").val();
     		var gender = $("#gender").val();
     		var age = $("#age").val();
+    		if (telephone == null || telephone == "") {
+    			alert("手机号不能为空");
+    			return false;
+    		}
+    		if (otpCode == null || otpCode == "") {
+    			alert("验证码不能为空");
+    			return false;
+    		}
+    		if (name == null || name == "") {
+    			alert("用户名不能为空");
+    			return false;
+    		}
+    		if (password == null || password == "") {
+    			alert("密码不能为空");
+    			return false;
+    		}
+    		if (gender == null || gender == "") {
+    			alert("性别不能为空");
+    			return false;
+    		}
+    		if (age == null || age == "") {
+    			alert("年龄不能为空");
+    			return false;
+    		}
     		$.ajax({
     			type: "POST",
     			contentType: "application/x-www-form-urlencoded",
@@ -82,6 +105,7 @@
     			success: function (data) {
     				if (data.status == "success") {
     					alert("注册成功");
+						window.location.href = "login.html";
     				} else {
     					alert("注册失败，" + data.data.errorMessage);
     				}
@@ -90,6 +114,5 @@
     		return false;
     	});
     });
-
 </script>
 </html>

@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Random;
 
 @CrossOrigin(allowCredentials = "true", allowedHeaders = "*")
@@ -31,8 +30,23 @@ public class UserController extends BaseController {
     @Autowired
     private HttpServletRequest request;
 
+    @GetMapping("/get")
+    public CommonReturnType getUser(@RequestParam("id") Integer id) {
+        UserModel userModel = userService.getUserById(id);
+        UserVO userVO = new UserVO();
+        try {
+            BeanUtils.copyProperties(userVO, userModel);
+        } catch (Exception e) {
+            LOGGER.error("Copy properties failure", e);
+        }
+        return CommonReturnType.create(userVO);
+    }
+
     @PostMapping("/otp")
     public CommonReturnType getOtp(@RequestParam("telephone") String telephone) {
+        if (StringUtils.isEmpty(telephone)) {
+            throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR);
+        }
         String otpCode = String.valueOf(new Random().nextInt(99999));
         LOGGER.info("telephone: " + telephone + ", otpCode: " + otpCode);
         // mock send otp
@@ -41,12 +55,12 @@ public class UserController extends BaseController {
     }
 
     @PostMapping("/register")
-    public CommonReturnType register(@RequestParam(name = "telephone") String telephone,
-                                     @RequestParam(name = "otpCode") String otpCode,
-                                     @RequestParam(name = "name") String name,
-                                     @RequestParam(name = "password") String password,
-                                     @RequestParam(name = "gender") Integer gender,
-                                     @RequestParam(name = "age") Integer age) {
+    public CommonReturnType register(@RequestParam("telephone") String telephone,
+                                     @RequestParam("otpCode") String otpCode,
+                                     @RequestParam("name") String name,
+                                     @RequestParam("password") String password,
+                                     @RequestParam("gender") Integer gender,
+                                     @RequestParam("age") Integer age) {
         String exceptedOptCode = String.valueOf(request.getSession().getAttribute(telephone));
         if (!StringUtils.equals(exceptedOptCode, otpCode)) {
             throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "验证码错误");
@@ -64,23 +78,16 @@ public class UserController extends BaseController {
         return CommonReturnType.create("User is registered");
     }
 
-    @GetMapping("/get")
-    public CommonReturnType getUser(@RequestParam("id") Integer id) {
-        UserModel userModel = userService.getUserById(id);
-        UserVO userVO = convert(userModel);
-        return CommonReturnType.create(userVO);
-    }
-
-    private UserVO convert(UserModel userModel) {
-        UserVO userVO = new UserVO();
-        try {
-            BeanUtils.copyProperties(userVO, userModel);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
+    @PostMapping("/login")
+    public CommonReturnType login(@RequestParam("telephone") String telephone,
+                                  @RequestParam("password") String password) {
+        if (StringUtils.isEmpty(telephone) || StringUtils.isEmpty(password)) {
+            throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR);
         }
-        return userVO;
+        UserModel userModel = userService.validateLogin(telephone, DigestUtils.md5Hex(password));
+        request.getSession().setAttribute("IS_LOGIN", true);
+        request.getSession().setAttribute("LOGIN_USER", userModel);
+        return CommonReturnType.create("User login success");
     }
 
 }

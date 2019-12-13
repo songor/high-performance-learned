@@ -8,4 +8,6 @@ public interface UserService {
 
     void register(UserModel userModel);
 
+    UserModel validateLogin(String telephone, String encryptPassword);
+
 }

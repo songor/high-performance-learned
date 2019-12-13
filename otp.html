@@ -24,10 +24,13 @@
 </body>
 
 <script>
-
     jQuery(document).ready(function () {
     	$("#otp").on("click", function () {
     		var telephone = $("#telephone").val();
+    		if (telephone == null || telephone == "") {
+    			alert("手机号不能为空");
+    			return false;
+    		}
     		$.ajax({
     			type: "POST",
     			contentType: "application/x-www-form-urlencoded",
@@ -50,6 +53,5 @@
     		return false;
     	});
     });
-
 </script>
 </html>
