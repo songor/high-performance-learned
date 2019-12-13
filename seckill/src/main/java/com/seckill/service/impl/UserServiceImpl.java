@@ -1,5 +1,6 @@
 package com.seckill.service.impl;
 
+import com.seckill.controller.UserController;
 import com.seckill.dao.UserDOMapper;
 import com.seckill.dao.UserPasswordDOMapper;
 import com.seckill.dataobject.UserDO;
@@ -9,13 +10,15 @@ import com.seckill.error.BusinessException;
 import com.seckill.model.UserModel;
 import com.seckill.service.UserService;
 import org.apache.commons.beanutils.BeanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.InvocationTargetException;
-
 @Service
 public class UserServiceImpl implements UserService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Autowired
     private UserDOMapper userDOMapper;
@@ -30,20 +33,29 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(BusinessErrorEnum.USER_NON_EXIST);
         }
         UserPasswordDO userPasswordDO = userPasswordDOMapper.selectByUserId(userDO.getId());
-        return convert(userDO, userPasswordDO);
-    }
-
-    private UserModel convert(UserDO userDO, UserPasswordDO userPasswordDO) {
         UserModel userModel = new UserModel();
         try {
             BeanUtils.copyProperties(userModel, userDO);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            LOGGER.error("Copy properties failure", e);
         }
         userModel.setEncryptPassword(userPasswordDO.getEncryptPassword());
         return userModel;
+    }
+
+    @Override
+    public void register(UserModel userModel) {
+        UserDO userDO = new UserDO();
+        try {
+            BeanUtils.copyProperties(userDO, userModel);
+        } catch (Exception e) {
+            LOGGER.error("Copy properties failure", e);
+        }
+        userDOMapper.insertSelective(userDO);
+        UserPasswordDO userPasswordDO = new UserPasswordDO();
+        userPasswordDO.setEncryptPassword(userModel.getEncryptPassword());
+        userPasswordDO.setUserId(userDO.getId());
+        userPasswordDOMapper.insertSelective(userPasswordDO);
     }
 
 }
