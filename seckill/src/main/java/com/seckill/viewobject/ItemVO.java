@@ -23,4 +23,14 @@ public class ItemVO {
 
     private String imageUrl;
 
+    private Integer promoStatus;
+
+    private Integer promoId;
+
+    private BigDecimal promoPrice;
+
+    private String promoStartDate;
+
+    private String promoEndDate;
+
 }

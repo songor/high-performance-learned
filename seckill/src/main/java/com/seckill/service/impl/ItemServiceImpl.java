@@ -7,7 +7,9 @@ import com.seckill.dataobject.ItemStockDO;
 import com.seckill.error.BusinessErrorEnum;
 import com.seckill.error.BusinessException;
 import com.seckill.model.ItemModel;
+import com.seckill.model.PromoModel;
 import com.seckill.service.ItemService;
+import com.seckill.service.PromoService;
 import com.seckill.validator.CustomValidator;
 import com.seckill.validator.ValidationResult;
 import org.apache.commons.beanutils.BeanUtils;
@@ -31,6 +33,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Autowired
     private ItemStockDOMapper itemStockDOMapper;
+
+    @Autowired
+    private PromoService promoService;
 
     @Autowired
     private CustomValidator validator;
@@ -77,6 +82,11 @@ public class ItemServiceImpl implements ItemService {
 
         ItemStockDO itemStockDO = itemStockDOMapper.selectByItemId(itemDO.getId());
         itemModel.setStock(itemStockDO.getStock());
+
+        PromoModel promoModel = promoService.getPromoByItemId(itemDO.getId());
+        if (promoModel.getStatus() != 0 && promoModel.getStatus() != 3) {
+            itemModel.setPromoModel(promoModel);
+        }
 
         return itemModel;
     }

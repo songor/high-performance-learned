@@ -13,6 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,6 +66,15 @@ public class ItemController extends BaseController {
             BeanUtils.copyProperties(itemVO, itemModel);
         } catch (Exception e) {
             LOGGER.error("Copy properties failure", e);
+        }
+        if (itemModel.getPromoModel() != null) {
+            itemVO.setPromoStatus(itemModel.getPromoModel().getStatus());
+            itemVO.setPromoId(itemModel.getPromoModel().getId());
+            itemVO.setPromoPrice(itemModel.getPromoModel().getItemPrice());
+            itemVO.setPromoStartDate(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                    .format(LocalDateTime.ofInstant(itemModel.getPromoModel().getStartDate().toInstant(), ZoneId.systemDefault())));
+            itemVO.setPromoEndDate(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                    .format(LocalDateTime.ofInstant(itemModel.getPromoModel().getEndDate().toInstant(), ZoneId.systemDefault())));
         }
 
         return CommonReturnType.create(itemVO);

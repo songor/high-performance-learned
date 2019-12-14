@@ -68,6 +68,13 @@
         <!--               enableUpdateByExample="false"-->
         <!--               selectByExampleQueryId="false"/>-->
 
+        <!--        <table tableName="PROMO" domainObjectName="PromoDO"-->
+        <!--               enableSelectByExample="false"-->
+        <!--               enableDeleteByExample="false"-->
+        <!--               enableCountByExample="false"-->
+        <!--               enableUpdateByExample="false"-->
+        <!--               selectByExampleQueryId="false"/>-->
+
     </context>
 
 </generatorConfiguration>

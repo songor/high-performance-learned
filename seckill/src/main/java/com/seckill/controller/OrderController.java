@@ -23,14 +23,15 @@ public class OrderController extends BaseController {
 
     @PostMapping("/create")
     public CommonReturnType createOrder(@RequestParam("itemId") Integer itemId,
-                                        @RequestParam("amount") Integer amount) {
+                                        @RequestParam("amount") Integer amount,
+                                        @RequestParam(value = "promoId", required = false) Integer promoId) {
         Boolean isLogin = (Boolean) request.getSession().getAttribute("IS_LOGIN");
         if (isLogin == null || !isLogin.booleanValue()) {
             throw new BusinessException(BusinessErrorEnum.USER_NOT_LOGIN);
         }
         UserModel userModel = (UserModel) request.getSession().getAttribute("LOGIN_USER");
 
-        orderService.createOrder(userModel.getId(), itemId, amount);
+        orderService.createOrder(userModel.getId(), itemId, amount, promoId);
         return CommonReturnType.create("Order created");
     }
 

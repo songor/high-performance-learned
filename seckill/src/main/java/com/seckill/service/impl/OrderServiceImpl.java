@@ -43,7 +43,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional
     @Override
-    public OrderModel createOrder(Integer userId, Integer itemId, Integer amount) {
+    public OrderModel createOrder(Integer userId, Integer itemId, Integer amount, Integer promoId) {
         if (amount <= 0 || amount > 99) {
             throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "购买数量不合法");
         }
@@ -55,6 +55,14 @@ public class OrderServiceImpl implements OrderService {
         if (itemModel == null) {
             throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "商品不存在");
         }
+        if (promoId != null) {
+            if (itemModel.getPromoModel() == null || promoId != itemModel.getPromoModel().getId()) {
+                throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "秒杀不存在");
+            }
+            if (itemModel.getPromoModel().getStatus() != 2) {
+                throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "秒杀未开始");
+            }
+        }
 
         if (!itemService.decreaseStock(itemId, amount)) {
             throw new BusinessException(BusinessErrorEnum.STOCK_NON_ENOUGH);
@@ -64,9 +72,14 @@ public class OrderServiceImpl implements OrderService {
         orderModel.setId(generateOrderId());
         orderModel.setUserId(userId);
         orderModel.setItemId(itemId);
-        orderModel.setItemPrice(itemModel.getPrice());
+        if (promoId != null) {
+            orderModel.setItemPrice(itemModel.getPromoModel().getItemPrice());
+            orderModel.setPromoId(promoId);
+        } else {
+            orderModel.setItemPrice(itemModel.getPrice());
+        }
         orderModel.setAmount(amount);
-        orderModel.setOrderPrice(itemModel.getPrice().multiply(BigDecimal.valueOf(amount)));
+        orderModel.setOrderPrice(orderModel.getItemPrice().multiply(BigDecimal.valueOf(amount)));
 
         OrderDO orderDO = new OrderDO();
         try {

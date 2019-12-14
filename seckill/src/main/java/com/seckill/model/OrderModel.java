@@ -21,4 +21,6 @@ public class OrderModel {
 
     private BigDecimal orderPrice;
 
+    private Integer promoId;
+
 }

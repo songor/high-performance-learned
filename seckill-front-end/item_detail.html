@@ -11,7 +11,12 @@
 <body class="login">
 <div class="content">
     <h3 class="form-title">商品详情</h3>
-    <div class="form-group">
+    <div id="promo_date_container" class="form-group">
+		<div>
+			<label style="color:red" id="promo_date" class="control-label"/>
+		</div>
+	</div>
+	<div class="form-group">
         <div>
             <label class="control-label" id="title"/>
         </div>
@@ -27,10 +32,16 @@
             <label class="control-label" id="description"/>
         </div>
     </div>
-    <div class="form-group">
+    <div id="price_container" class="form-group">
         <label class="control-label">商品价格</label>
         <div>
             <label class="control-label" id="price"/>
+        </div>
+    </div>
+	<div id="promo_price_container" class="form-group">
+        <label style="color:red" class="control-label">秒杀价格</label>
+        <div>
+            <label style="color:red" class="control-label" id="promo_price"/>
         </div>
     </div>
     <div class="form-group">
@@ -54,6 +65,7 @@
 
 <script>
 	var item = {};
+	var timer;
 	$(document).ready(function() {
 		$.ajax({
 			type: "GET",
@@ -68,6 +80,9 @@
 				if (data.status == "success") {
 					item = data.data;
 					reload();
+					if (item.promoStatus == 1 || item.promoStatus == 2) {
+						timer = setInterval(reload, 1000);
+					}
 				} else {
 					alert("获取商品详情失败，" + data.data.errorMessage);
 				}
@@ -81,7 +96,8 @@
 			contentType: "application/x-www-form-urlencoded",
 			data: {
 				"itemId": item.id,
-				"amount": 1
+				"amount": 1,
+				"promoId": item.promoId
 			},
 			xhrFields: {
 				withCredentials: true
@@ -110,6 +126,35 @@
 		$("#price").text(item.price);
 		$("#stock").text(item.stock);
 		$("#sales").text(item.sales);
+		if (item.promoStatus == 1) {
+			var startTime = item.promoStartDate.replace(new RegExp("-", "gm"), "/");
+			startTime = (new Date(startTime)).getTime();
+			var nowTime = Date.parse(new Date());
+			var delta = (startTime - nowTime) / 1000;
+			if (delta <= 0) {
+				item.promoStatus = 2;
+			}
+			$("#promo_date").text("秒杀即将开始（" + item.promoStartDate + "），剩余：" + delta + " 秒");
+			$("#promo_price").text(item.promoPrice);
+			$("#create-order").attr("disabled", true);
+		} else if (item.promoStatus == 2) {
+			var endTime = item.promoEndDate.replace(new RegExp("-", "gm"), "/");
+			endTime = (new Date(endTime)).getTime();
+			var nowTime = Date.parse(new Date());
+			var delta = (endTime - nowTime) / 1000;
+			if (delta <= 0) {
+				item.promoStatus = 3;
+				item.promoId = null;
+			}
+			$("#promo_date").text("秒杀正在进行");
+			$("#promo_price").text(item.promoPrice);
+			$("#create-order").attr("disabled", false);
+			$("#price_container").hide();
+		} else {
+			$("#promo_date_container").hide();
+			$("#promo_price_container").hide();
+			clearInterval(timer);
+		}
 	}
 
 	function get_param(name) {            
