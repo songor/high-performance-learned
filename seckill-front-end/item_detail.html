@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="static/assets/global/plugins/jquery-1.11.0.min.js" type="text/javascript"></script>
+    <link href="static/assets/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <link href="static/assets/global/css/components.css" rel="stylesheet" type="text/css"/>
+    <link href="static/assets/admin/pages/css/login.css" rel="stylesheet" type="text/css"/>
+</head>
+
+<body class="login">
+<div class="content">
+    <h3 class="form-title">商品详情</h3>
+    <div class="form-group">
+        <div>
+            <label class="control-label" id="title"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <div>
+            <img style="width:250px;height:auto;" id="image_url">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label">商品描述</label>
+        <div>
+            <label class="control-label" id="description"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label">商品价格</label>
+        <div>
+            <label class="control-label" id="price"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label">商品库存</label>
+        <div>
+            <label class="control-label" id="stock"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label">商品销量</label>
+        <div>
+            <label class="control-label" id="sales"/>
+        </div>
+    </div>
+</div>
+</body>
+
+<script>
+	var item = {};
+	$(document).ready(function() {
+		$.ajax({
+			type: "GET",
+			url: "http://localhost:8080/item/get",
+			data: {
+				"id": get_param("id"),
+			},
+			xhrFields:{
+				withCredentials:true
+			},
+			success: function(data) {
+				if (data.status == "success") {
+					item = data.data;
+					reload();
+				} else {
+					alert("获取商品详情失败，" + data.data.errorMessage);
+				}
+			}
+		});
+	});
+
+	function reload() {
+		$("#title").text(item.title);
+		$("#image_url").attr("src", item.imageUrl);
+		$("#description").text(item.description);
+		$("#price").text(item.price);
+		$("#stock").text(item.stock);
+		$("#sales").text(item.sales);
+	}
+
+	function get_param(name) {            
+		param_value = "", is_found = !1;         
+		if (this.location.search.indexOf("?") == 0 && this.location.search.indexOf("=") > 1) {               
+			arrSource = unescape(this.location.search).substring(1, this.location.search.length).split("&"), i = 0;               
+			while (i < arrSource.length && !is_found) 
+				arrSource[i].indexOf("=") > 0 && arrSource[i].split("=")[0].toLowerCase() == name.toLowerCase() && (param_value = arrSource[i].split("=")[1], is_found = !0), i++
+		}           
+		return param_value == "" && (param_value = null), param_value      
+	}
+</script>
+</html>

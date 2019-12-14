@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @CrossOrigin(allowCredentials = "true", allowedHeaders = "*")
 @RestController
@@ -58,6 +60,21 @@ public class ItemController extends BaseController {
         }
 
         return CommonReturnType.create(itemVO);
+    }
+
+    @GetMapping("/list")
+    public CommonReturnType listItem() {
+        List<ItemModel> itemModelList = itemService.listItem();
+        List<ItemVO> itemVOList = itemModelList.stream().map(itemModel -> {
+            ItemVO itemVO = new ItemVO();
+            try {
+                BeanUtils.copyProperties(itemVO, itemModel);
+            } catch (Exception e) {
+                LOGGER.error("Copy properties failure", e);
+            }
+            return itemVO;
+        }).collect(Collectors.toList());
+        return CommonReturnType.create(itemVOList);
     }
 
 }

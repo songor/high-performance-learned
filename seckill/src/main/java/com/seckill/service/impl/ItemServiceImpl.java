@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ItemServiceImpl implements ItemService {
@@ -74,6 +76,27 @@ public class ItemServiceImpl implements ItemService {
         itemModel.setStock(itemStockDO.getStock());
 
         return itemModel;
+    }
+
+    @Override
+    public List<ItemModel> listItem() {
+        List<ItemDO> itemDOList = itemDOMapper.listItem();
+        List<ItemModel> itemModelList = itemDOList.stream().map(itemDO -> {
+            ItemModel itemModel = new ItemModel();
+
+            try {
+                BeanUtils.copyProperties(itemModel, itemDO);
+            } catch (Exception e) {
+                LOGGER.error("Copy properties failure", e);
+            }
+            itemModel.setPrice(BigDecimal.valueOf(itemDO.getPrice()));
+
+            ItemStockDO itemStockDO = itemStockDOMapper.selectByItemId(itemDO.getId());
+            itemModel.setStock(itemStockDO.getStock());
+
+            return itemModel;
+        }).collect(Collectors.toList());
+        return itemModelList;
     }
 
 }
