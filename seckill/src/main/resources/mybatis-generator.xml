@@ -40,19 +40,26 @@
         <!--               enableUpdateByExample="false"-->
         <!--               selectByExampleQueryId="false"/>-->
 
-        <table tableName="ITEM" domainObjectName="ItemDO"
-               enableSelectByExample="false"
-               enableDeleteByExample="false"
-               enableCountByExample="false"
-               enableUpdateByExample="false"
-               selectByExampleQueryId="false"/>
+        <!--        <table tableName="ITEM" domainObjectName="ItemDO"-->
+        <!--               enableSelectByExample="false"-->
+        <!--               enableDeleteByExample="false"-->
+        <!--               enableCountByExample="false"-->
+        <!--               enableUpdateByExample="false"-->
+        <!--               selectByExampleQueryId="false"/>-->
 
-        <table tableName="ITEM_STOCK" domainObjectName="ItemStockDO"
-               enableSelectByExample="false"
-               enableDeleteByExample="false"
-               enableCountByExample="false"
-               enableUpdateByExample="false"
-               selectByExampleQueryId="false"/>
+        <!--        <table tableName="ITEM_STOCK" domainObjectName="ItemStockDO"-->
+        <!--               enableSelectByExample="false"-->
+        <!--               enableDeleteByExample="false"-->
+        <!--               enableCountByExample="false"-->
+        <!--               enableUpdateByExample="false"-->
+        <!--               selectByExampleQueryId="false"/>-->
+
+        <!--        <table tableName="ORDER_INFO" domainObjectName="OrderDO"-->
+        <!--               enableSelectByExample="false"-->
+        <!--               enableDeleteByExample="false"-->
+        <!--               enableCountByExample="false"-->
+        <!--               enableUpdateByExample="false"-->
+        <!--               selectByExampleQueryId="false"/>-->
 
     </context>
 
