@@ -5,12 +5,12 @@ public class BusinessException extends RuntimeException implements CommonError {
     private CommonError commonError;
 
     public BusinessException(CommonError commonError) {
-        super();
+        super(commonError.getErrorMessage());
         this.commonError = commonError;
     }
 
     public BusinessException(CommonError commonError, String errorMessage) {
-        super();
+        super(errorMessage);
         this.commonError = commonError;
         this.commonError.setErrorMessage(errorMessage);
     }
