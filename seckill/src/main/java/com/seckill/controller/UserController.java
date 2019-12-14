@@ -33,6 +33,9 @@ public class UserController extends BaseController {
     @GetMapping("/get")
     public CommonReturnType getUser(@RequestParam("id") Integer id) {
         UserModel userModel = userService.getUserById(id);
+        if (userModel == null) {
+            throw new BusinessException(BusinessErrorEnum.USER_NON_EXIST);
+        }
         UserVO userVO = new UserVO();
         try {
             BeanUtils.copyProperties(userVO, userModel);

@@ -1,5 +1,7 @@
 package com.seckill.controller;
 
+import com.seckill.error.BusinessErrorEnum;
+import com.seckill.error.BusinessException;
 import com.seckill.model.ItemModel;
 import com.seckill.response.CommonReturnType;
 import com.seckill.service.ItemService;
@@ -51,6 +53,9 @@ public class ItemController extends BaseController {
     @GetMapping("/get")
     public CommonReturnType getItem(@RequestParam("id") Integer id) {
         ItemModel itemModel = itemService.getItemById(id);
+        if (itemModel == null) {
+            throw new BusinessException(BusinessErrorEnum.ITEM_NON_EXIST);
+        }
 
         ItemVO itemVO = new ItemVO();
         try {

@@ -61,6 +61,13 @@
         <!--               enableUpdateByExample="false"-->
         <!--               selectByExampleQueryId="false"/>-->
 
+        <!--        <table tableName="SEQUENCE_INFO" domainObjectName="SequenceDO"-->
+        <!--               enableSelectByExample="false"-->
+        <!--               enableDeleteByExample="false"-->
+        <!--               enableCountByExample="false"-->
+        <!--               enableUpdateByExample="false"-->
+        <!--               selectByExampleQueryId="false"/>-->
+
     </context>
 
 </generatorConfiguration>

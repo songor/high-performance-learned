@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
     public UserModel getUserById(Integer id) {
         UserDO userDO = userDOMapper.selectByPrimaryKey(id);
         if (userDO == null) {
-            throw new BusinessException(BusinessErrorEnum.USER_NON_EXIST);
+            return null;
         }
         UserPasswordDO userPasswordDO = userPasswordDOMapper.selectByUserId(userDO.getId());
         UserModel userModel = new UserModel();

@@ -65,6 +65,9 @@ public class ItemServiceImpl implements ItemService {
         ItemModel itemModel = new ItemModel();
 
         ItemDO itemDO = itemDOMapper.selectByPrimaryKey(id);
+        if (itemDO == null) {
+            return null;
+        }
         try {
             BeanUtils.copyProperties(itemModel, itemDO);
         } catch (Exception e) {
@@ -97,6 +100,23 @@ public class ItemServiceImpl implements ItemService {
             return itemModel;
         }).collect(Collectors.toList());
         return itemModelList;
+    }
+
+    @Transactional
+    @Override
+    public boolean decreaseStock(Integer itemId, Integer amount) {
+        int affectedCount = itemStockDOMapper.decreaseStock(itemId, amount);
+        if (affectedCount > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Transactional
+    @Override
+    public void increaseSales(Integer itemId, Integer amount) {
+        itemDOMapper.increaseSales(itemId, amount);
     }
 
 }

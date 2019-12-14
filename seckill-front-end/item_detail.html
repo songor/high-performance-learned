@@ -45,6 +45,10 @@
             <label class="control-label" id="sales"/>
         </div>
     </div>
+	<div class="form-actions">
+        <button class="btn blue" id="create-order" type="submit">下单</button>
+		<button class="btn blue" id="back" type="submit">返回</button>
+	</div>
 </div>
 </body>
 
@@ -69,6 +73,34 @@
 				}
 			}
 		});
+	});
+	$("#create-order").on("click", function () {
+		$.ajax({
+			type: "POST",
+			url: "http://localhost:8080/order/create",
+			contentType: "application/x-www-form-urlencoded",
+			data: {
+				"itemId": item.id,
+				"amount": 1
+			},
+			xhrFields: {
+				withCredentials: true
+			},
+			success: function (data) {
+				if (data.status == "success") {
+					alert("下单成功");
+					window.location.reload();
+				} else {
+					alert("下单失败，" + data.data.errorMessage);
+					if (data.data.errorCode == 20003) {
+						window.location.href = "login.html";
+					}
+				}
+			}
+		});
+	});
+	$("#back").on("click", function () {
+		window.location.href = "item_list.html";
 	});
 
 	function reload() {

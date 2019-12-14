@@ -4,8 +4,11 @@ public enum BusinessErrorEnum implements CommonError {
 
     UNKNOWN_ERROR(10001, "未知错误"),
     PARAMETER_VALIDATION_ERROR(10002, "参数不合法"),
-    USER_NON_EXIST(20001, "该用户不存在"),
-    USER_LOGIN_FAIL(20002, "手机号或密码错误");
+    USER_NON_EXIST(20001, "用户不存在"),
+    USER_LOGIN_FAIL(20002, "手机号或密码错误"),
+    USER_NOT_LOGIN(20003, "用户未登陆"),
+    ITEM_NON_EXIST(30001, "商品不存在"),
+    STOCK_NON_ENOUGH(30002, "库存不足");
 
     private int errorCode;
 
