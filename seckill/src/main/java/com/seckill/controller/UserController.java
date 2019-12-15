@@ -17,10 +17,20 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Random;
 
+/**
+ * 跨域感知 Session 需要解决两个问题，第一个是解决跨域问题，第二个是解决跨域 Cookie 传输问题
+ * （1）跨域问题
+ * Spring Boot @CrossOrigin(origins = {"*"}, allowedHeaders = "*")
+ * （2）跨域 Cookie 传输问题
+ * 前端 xhrFields: {withCredentials: true}
+ * Spring Boot @CrossOrigin(allowCredentials = "true", allowedHeaders = "*")
+ * 当设置了 allowCredentials = "true" 的时候 origins = {"*"} 就失效了
+ * 在 Spring Boot 返回的 allow origin 取 request 内的 origin，这样就可以做到在哪个 origin 上使用跨域就允许哪个 origin
+ */
 @CrossOrigin(allowCredentials = "true", allowedHeaders = "*")
 @RestController
 @RequestMapping("/user")
-public class UserController extends BaseController {
+public class UserController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
 

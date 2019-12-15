@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * {@link GlobalExceptionHandler}
+ */
+@Deprecated
 public class BaseController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseController.class);

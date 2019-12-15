@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
 @CrossOrigin(allowCredentials = "true", allowedHeaders = "*")
 @RestController
 @RequestMapping("/item")
-public class ItemController extends BaseController {
+public class ItemController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ItemController.class);
 

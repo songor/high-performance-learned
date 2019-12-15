@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 @CrossOrigin(allowCredentials = "true", allowedHeaders = "*")
 @RestController
 @RequestMapping("/order")
-public class OrderController extends BaseController {
+public class OrderController {
 
     @Autowired
     private HttpServletRequest request;
