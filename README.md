@@ -95,18 +95,48 @@
 
   * server 端并发线程数
 
-    * Spring Boot spring-configuration-metadata.json
+    Spring Boot spring-configuration-metadata.json
 
-      server.tomcat.accept-count
+    server.tomcat.accept-count 100
 
-      server.tomcat.max-connections
+    Maximum queue length for incoming connection requests when all possible request processing threads are in use.
 
-      server.tomcat.max-threads
+    server.tomcat.max-connections 10000
 
-      server.tomcat.min-spare-threads
+    Maximum number of connections that the server accepts and processes at any given time. Once the limit has been reached, the operating system may still accept connections based on the \"acceptCount\" property.
 
-    * 
+    server.tomcat.max-threads 200
 
-  * 
+    server.tomcat.min-spare-threads 10
+
+  * 优化方向
+
+    * 单 Web 容器上限
+
+      线程数量：4 核 CPU 8G 内存单进程调度线程数 800 - 1000 以上后即花费巨大的时间在 CPU 调度上
+
+      等待队列长度：队列做缓冲池用，但也不能无限长，消耗内存，出队入队也消耗 CPU
+
+    * MySQL 数据库 QPS 容量
+
+      主键查询：千万级别数据 1 - 10 毫秒
+
+      唯一索引查询：千万级别数据 10 - 100 毫秒
+
+      非唯一索引查询：千万级别数据 100 - 1000 毫秒
+
+      无索引：百万条数据 1000 毫秒 +
+
+    * MySQL 数据库 TPS 容量
+
+      更新、删除：同查询
+
+      插入：1w - 10w TPS（依赖配置优化）
+
+* 定制化内嵌 tomcat
+
+  * keepAliveTimeOut
+  * maxKeepAliveRequests
+  * implements WebServerFactoryCustomizer\<ConfigurableWebServerFactory\>
 
 * 
