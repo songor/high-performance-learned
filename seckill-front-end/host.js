@@ -1,0 +1,1 @@
+var global_host = "localhost:8080";
