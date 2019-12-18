@@ -249,4 +249,25 @@
       server.tomcat.accesslog.directory=/var/www/seckill/accesslog
       server.tomcat.accesslog.pattern=%h %l %u %t "%r" %s %b %D
 
-* 
+* Nginx 开启 Keepalive
+
+  worker_processes  10;
+
+  events {
+      worker_connections  10240;
+  }
+
+  upstream seckill_application_server {
+      server 172.24.129.190:8080 weight=1;
+      server 172.24.129.191:8080 weight=1;
+      keepalive 30;
+  }
+
+  location / {
+      proxy_pass http://seckill_application_server;
+      proxy_set_header Host $http_host:$proxy_port;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_http_version 1.1;
+      proxy_set_header Connection "";
+  }
