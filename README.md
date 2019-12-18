@@ -139,4 +139,114 @@
   * maxKeepAliveRequests
   * implements WebServerFactoryCustomizer\<ConfigurableWebServerFactory\>
 
+### 分布式扩展
+
+* Nginx 反向代理负载均衡 & 服务端水平对称部署 & MySQL 开放远端连接
+
+  * scp -r /var/www/ root@172.24.129.190:/var/
+
+    scp /tmp/jdk-8u212-linux-x64.rpm  root@172.24.129.190:/tmp
+
+    scp -r /var/www/ root@172.24.129.191:/var/
+
+    scp /tmp/jdk-8u212-linux-x64.rpm  root@172.24.129.191:/tmp
+
+  * yum install telnet
+
+    telnet 172.24.129.189 3306
+
+    use mysql
+
+    show tables;
+
+    select host,user,password from user;
+
+    grant all privileges on \*.\* to root@172.24.129.190 identified by 'root';
+
+    grant all privileges on \*.\* to root@172.24.129.191 identified by 'root';
+
+    flush privileges;
+
+  * 外部化 spring.datasource.url 配置
+
+  * Nginx 安装
+
+    netstat -an | grep 80
+
+    wget https://openresty.org/download/openresty-1.15.8.2.tar.gz
+
+    tar -xvzf openresty-1.15.8.2.tar.gz
+
+    cd openresty-1.15.8.2
+
+    yum install pcre-devel openssl-devel gcc curl
+
+    ./configure
+
+    make
+
+    make install
+
+* Nginx
+
+  * 静态 Web 服务器
+
+    * 启动 Nginx
+
+      cd /usr/local/openresty/nginx/
+
+      sbin/nginx -c conf/nginx.conf
+
+      拷贝静态资源文件至 /usr/local/openresty/nginx/html
+
+    * 配置静态资源 location
+
+      location /resources/ {
+          alias  /usr/local/openresty/nginx/html/resources/;
+      }
+
+      mv *.html resources/（除 50x.html 和 index.html）
+
+      mv host.js resources/
+
+      cp -r static resources/
+
+      rm -rf static/
+
+    * 修改 host.js
+
+      var global_host = "39.104.118.251";
+      
+    * 无缝重启
+
+      sbin/nginx -s reload
+
+  * 动静分离服务器
+
+    /resources 路径为静态资源使用；其他路径为动态资源使用
+
+  * 反向代理服务器
+
+    * 配置 upstream server
+
+      upstream seckill_application_server {
+          server 172.24.129.190:8080 weight=1;
+          server 172.24.129.191:8080 weight=1;
+      }
+
+    * 配置动态资源 location
+
+      location / {
+          proxy_pass http://seckill_application_server;
+          proxy_set_header Host $http_host:$proxy_port;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      }
+
+    * 开启 tomcat access log 验证
+
+      server.tomcat.accesslog.enabled=true
+      server.tomcat.accesslog.directory=/var/www/seckill/accesslog
+      server.tomcat.accesslog.pattern=%h %l %u %t "%r" %s %b %D
+
 * 
