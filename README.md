@@ -271,3 +271,10 @@
       proxy_http_version 1.1;
       proxy_set_header Connection "";
   }
+
+* JMeter 拾遗
+  * [Apache JMeter: a Powerful Tool for Performance and Load Testing](https://www.logicify.com/en/blog/apache-jmeter-a-powerful-tool-for-performance-and-load-testing/)
+  * [Apache JMeter](https://jmeter.apache.org/usermanual/get-started.html)
+  * setenv.sh => export HEAP="-Xms2G -Xmx2G -XMaxMetaspaceSize=512m"
+  * jmeter -n -t [jmx file] -l [results file] -e -o [Path to web report folder]
+* 
