@@ -65,7 +65,7 @@
 * mysqldump
 
   * cd C:\developer\mysql-8.0.18\bin
-  * mysqldump -uroot -proot seckill > C:\developer\high-performance-learned\seckill-sql\seckill.sql
+  * mysqldump -uroot -proot seckill > C:\developer\high-performance-learned\seckill.sql
   * WinSCP 拷贝 seckill.sql 至 ESC /tmp
   * mysql -uroot -proot < /tmp/seckill.sql
 
@@ -277,4 +277,5 @@
   * [Apache JMeter](https://jmeter.apache.org/usermanual/get-started.html)
   * setenv.sh => export HEAP="-Xms2G -Xmx2G -XMaxMetaspaceSize=512m"
   * jmeter -n -t [jmx file] -l [results file] -e -o [Path to web report folder]
+  * jmeter -Jusers=500 -Jseconds=5 -Jcounts=50 -Jip=39.104.166.225 -Jport=8080 -n -t seckill_item_get.jmx -l seckill_item_get.jtl -e -o report
 * 
