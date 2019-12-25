@@ -187,7 +187,7 @@
 
     make install
 
-* Nginx
+* Nginx 使用
 
   * 静态 Web 服务器
 
@@ -275,7 +275,29 @@
 * JMeter 拾遗
   * [Apache JMeter: a Powerful Tool for Performance and Load Testing](https://www.logicify.com/en/blog/apache-jmeter-a-powerful-tool-for-performance-and-load-testing/)
   * [Apache JMeter](https://jmeter.apache.org/usermanual/get-started.html)
-  * setenv.sh => export HEAP="-Xms2G -Xmx2G -XMaxMetaspaceSize=512m"
+  * setenv.sh -> export HEAP="-Xms2G -Xmx2G -XMaxMetaspaceSize=512m"
   * jmeter -n -t [jmx file] -l [results file] -e -o [Path to web report folder]
   * jmeter -Jusers=500 -Jseconds=5 -Jcounts=50 -Jip=39.104.166.225 -Jport=8080 -n -t seckill_item_get.jmx -l seckill_item_get.jtl -e -o report
-* 
+  
+* Nginx 高性能原因
+
+  * epoll 多路复用
+
+    Java NIO -> Linux 2.6 内核之前使用 Linux select 模型，之后使用 Linux epoll 模型
+
+    Java BIO -> Linux select 模型（变更触发轮询查找） -> Linux epoll 模型（变更触发回调函数）
+
+  * master worker 进程模型
+
+    * master 和 worker 是父子进程
+    * accept_mutex
+    * master 负责 CONNECT（epoll），worker 负责 ACCEPT、SEND、RECV（epoll）
+    * 每个 worker 进程只有一个线程
+
+  * 协程机制（类比 nodejs 异步编程模型）
+
+    * 依附于线程的内存模型，切换开销小（没有 CPU 切换开销，仅内存切换开销），无需加锁
+    * 遇阻塞归还执行权，代码同步编写
+
+* 分布式会话
+
