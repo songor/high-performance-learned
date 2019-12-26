@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
+//import javax.servlet.http.HttpServletRequest;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -40,8 +40,8 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private HttpServletRequest request;
+//    @Autowired
+//    private HttpServletRequest request;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -69,7 +69,9 @@ public class UserController {
         String otpCode = String.valueOf(new Random().nextInt(99999));
         LOGGER.info("telephone: " + telephone + ", otpCode: " + otpCode);
         // mock send otp
-        request.getSession().setAttribute(telephone, otpCode);
+//        request.getSession().setAttribute(telephone, otpCode);
+        redisTemplate.opsForValue().set(telephone, otpCode);
+        redisTemplate.expire(telephone, 5, TimeUnit.MINUTES);
         return CommonReturnType.create("The otp code already sent");
     }
 
@@ -80,7 +82,8 @@ public class UserController {
                                      @RequestParam("password") String password,
                                      @RequestParam("gender") Integer gender,
                                      @RequestParam("age") Integer age) {
-        String exceptedOptCode = String.valueOf(request.getSession().getAttribute(telephone));
+//        String exceptedOptCode = String.valueOf(request.getSession().getAttribute(telephone));
+        String exceptedOptCode = (String) redisTemplate.opsForValue().get(telephone);
         if (!StringUtils.equals(exceptedOptCode, otpCode)) {
             throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "验证码错误");
         }

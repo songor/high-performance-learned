@@ -10,15 +10,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
+//import javax.servlet.http.HttpServletRequest;
 
 @CrossOrigin(allowCredentials = "true", allowedHeaders = "*")
 @RestController
 @RequestMapping("/order")
 public class OrderController {
 
-    @Autowired
-    private HttpServletRequest request;
+//    @Autowired
+//    private HttpServletRequest request;
 
     @Autowired
     private OrderService orderService;
