@@ -12,10 +12,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 跨域感知 Session 需要解决两个问题，第一个是解决跨域问题，第二个是解决跨域 Cookie 传输问题
@@ -39,6 +42,9 @@ public class UserController {
 
     @Autowired
     private HttpServletRequest request;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @GetMapping("/get")
     public CommonReturnType getUser(@RequestParam("id") Integer id) {
@@ -98,9 +104,16 @@ public class UserController {
             throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR);
         }
         UserModel userModel = userService.validateLogin(telephone, DigestUtils.md5Hex(password));
-        request.getSession().setAttribute("IS_LOGIN", true);
-        request.getSession().setAttribute("LOGIN_USER", userModel);
-        return CommonReturnType.create("User login success");
+//        request.getSession().setAttribute("IS_LOGIN", true);
+//        request.getSession().setAttribute("LOGIN_USER", userModel);
+
+        String token = UUID.randomUUID().toString();
+        token = token.replace("-", "");
+
+        redisTemplate.opsForValue().set(token, userModel);
+        redisTemplate.expire(token, 1, TimeUnit.HOURS);
+
+        return CommonReturnType.create(token);
     }
 
 }
