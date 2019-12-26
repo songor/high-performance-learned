@@ -302,8 +302,11 @@
 * 分布式会话
 
   * 基于 cookie 传输 sessionid（tomcat 容器 session 实现迁移到 redis）
-    * [redis](https://github.com/microsoftarchive/redis/releases)
-    * 
+    * [redis Windows](https://github.com/microsoftarchive/redis/releases)
+    * [redis Installation](https://redis.io/download)
+    * vim redis.conf -> bind 172.24.129.189
+    * src/redis-server ./redis.conf &
+    * application.properties -> spring.redis.host=172.24.129.189
   * 基于 token 传输类似 sessionid
 
 * 
