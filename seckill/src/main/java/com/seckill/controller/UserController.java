@@ -15,10 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
-//import javax.servlet.http.HttpServletRequest;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+//import javax.servlet.http.HttpServletRequest;
 
 /**
  * 跨域感知 Session 需要解决两个问题，第一个是解决跨域问题，第二个是解决跨域 Cookie 传输问题

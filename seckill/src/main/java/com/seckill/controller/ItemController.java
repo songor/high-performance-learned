@@ -10,6 +10,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @CrossOrigin(allowCredentials = "true", allowedHeaders = "*")
@@ -26,8 +28,13 @@ public class ItemController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ItemController.class);
 
+    private static final String ITEM_PREFIX = "item_";
+
     @Autowired
     private ItemService itemService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @PostMapping("/create")
     public CommonReturnType createItem(@RequestParam("title") String title,
@@ -55,9 +62,16 @@ public class ItemController {
 
     @GetMapping("/get")
     public CommonReturnType getItem(@RequestParam("id") Integer id) {
-        ItemModel itemModel = itemService.getItemById(id);
+        String itemKey = ITEM_PREFIX + id;
+        ItemModel itemModel = (ItemModel) redisTemplate.opsForValue().get(itemKey);
         if (itemModel == null) {
-            throw new BusinessException(BusinessErrorEnum.ITEM_NON_EXIST);
+            itemModel = itemService.getItemById(id);
+            if (itemModel == null) {
+                throw new BusinessException(BusinessErrorEnum.ITEM_NON_EXIST);
+            } else {
+                redisTemplate.opsForValue().set(itemKey, itemModel);
+                redisTemplate.expire(itemKey, 10, TimeUnit.MINUTES);
+            }
         }
 
         ItemVO itemVO = new ItemVO();

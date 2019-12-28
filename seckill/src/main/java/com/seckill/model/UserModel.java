@@ -4,11 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.*;
-import java.io.Serializable;
 
 @Getter
 @Setter
-public class UserModel implements Serializable {
+public class UserModel {
 
     private Integer id;
 
