@@ -4,6 +4,7 @@ import com.seckill.error.BusinessErrorEnum;
 import com.seckill.error.BusinessException;
 import com.seckill.model.ItemModel;
 import com.seckill.response.CommonReturnType;
+import com.seckill.service.CacheService;
 import com.seckill.service.ItemService;
 import com.seckill.viewobject.ItemVO;
 import org.apache.commons.beanutils.BeanUtils;
@@ -36,6 +37,9 @@ public class ItemController {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Autowired
+    private CacheService cacheService;
+
     @PostMapping("/create")
     public CommonReturnType createItem(@RequestParam("title") String title,
                                        @RequestParam("price") BigDecimal price,
@@ -63,15 +67,18 @@ public class ItemController {
     @GetMapping("/get")
     public CommonReturnType getItem(@RequestParam("id") Integer id) {
         String itemKey = ITEM_PREFIX + id;
-        ItemModel itemModel = (ItemModel) redisTemplate.opsForValue().get(itemKey);
+        ItemModel itemModel = (ItemModel) cacheService.get(itemKey);
         if (itemModel == null) {
-            itemModel = itemService.getItemById(id);
+            itemModel = (ItemModel) redisTemplate.opsForValue().get(itemKey);
             if (itemModel == null) {
-                throw new BusinessException(BusinessErrorEnum.ITEM_NON_EXIST);
-            } else {
+                itemModel = itemService.getItemById(id);
+                if (itemModel == null) {
+                    throw new BusinessException(BusinessErrorEnum.ITEM_NON_EXIST);
+                }
                 redisTemplate.opsForValue().set(itemKey, itemModel);
                 redisTemplate.expire(itemKey, 10, TimeUnit.MINUTES);
             }
+            cacheService.put(itemKey, itemModel);
         }
 
         ItemVO itemVO = new ItemVO();
