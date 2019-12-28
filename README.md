@@ -296,8 +296,9 @@
 
   * 协程机制（类比 nodejs 异步编程模型）
 
-    * 依附于线程的内存模型，切换开销小（没有 CPU 切换开销，仅内存切换开销），无需加锁
+    * 依附于线程的内存模型，切换开销小（没有 CPU 切换开销，仅内存切换开销）
     * 遇阻塞归还执行权，代码同步编写
+    * 无需加锁
 
 * 分布式会话
 
@@ -308,6 +309,52 @@
     * src/redis-server ./redis.conf &
     * application.properties -> spring.redis.host=172.24.129.189
   * 基于 token 传输类似 sessionid
+
+### 多级缓存
+
+* 缓存设计原则
+
+  * 快速存取设备，内存
+  * 将缓存推到离用户最近的节点
+  * 缓存同步、清理
+
+* Redis 缓存
+
+  * 单机版
+  * sentinel 机制
+  * cluster 机制
+
+* 本地热点缓存
+
+  * 热点数据
+  * 脏读非常不敏感
+  * 内存可控
+  * Guava Cache
+    * 可控的大小和超时时间
+    * 可配置的 LRU 策略
+    * 线程安全
+
+* Nginx Proxy Cache
+
+  * Nginx 反向代理
+
+  * 依靠内存缓存文件地址
+
+  * 依靠文件系统存储索引级文件
+
+  * nginx.conf
+
+    proxy_cache_path /usr/local/openresty/nginx/tmp_cache levels=1:2 keys_zone=tmp_cache:100m inactive=7d max_size=10g;
+
+    location / {
+        proxy_cache tmp_cache;
+        proxy_cache_key $uri;
+        proxy_cache_valid 200 206 304 302 7d;
+    }
+
+* Nginx Lua 缓存
+
+  * Lua 协程
 
 * 
 
