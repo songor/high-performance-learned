@@ -344,17 +344,205 @@
 
   * nginx.conf
 
-    proxy_cache_path /usr/local/openresty/nginx/tmp_cache levels=1:2 keys_zone=tmp_cache:100m inactive=7d max_size=10g;
-
+    ```nginx
+  proxy_cache_path /usr/local/openresty/nginx/tmp_cache levels=1:2 keys_zone=tmp_cache:100m inactive=7d max_size=10g;
+    
     location / {
         proxy_cache tmp_cache;
         proxy_cache_key $uri;
         proxy_cache_valid 200 206 304 302 7d;
     }
+    ```
 
 * Nginx Lua 缓存
 
+  * 协程机制
+
   * Lua 协程
 
-* 
+    coroutine.yield()、coroutine.resume()
+
+  * Nginx 协程
+
+    * Nginx 的每一个 Worker 进程都是在 epoll 或 kqueue 这种事件模型之上，封装成协程
+    * 每一个请求都有一个协程进行处理
+    * 即使 ngx_lua 需要运行 Lua，相对于 C 有一定的开销，但依旧能保证高并发能力
+
+  * Nginx 协程机制（同步编程模型）
+
+    * Nginx 每个工作进程创建一个 Lua VM
+    * 工作进程内的所有协程共享一个 Lua VM
+    * 每个外部请求由一个 Lua 协程处理，之间数据隔离
+    * Lua 代码调用 IO 等异步接口时，协程被挂起，保存上下文数据，不阻塞工作进程
+    * IO 等异步操作完成后还原协程上下文，代码继续执行
+
+  * Nginx 处理阶段
+
+    * NGX_HTTP_POST_READ_PHASE
+    * NGX_HTTP_SERVER_REWRITE_PHASE -> rewrite_handler
+    * NGX_HTTP_FIND_CONFIG_PHASE
+    * NGX_HTTP_REWRITE_PHASE -> rewrite_handler
+    * NGX_HTTP_POST_REWRITE_PHASE
+    * NGX_HTTP_PREACCESS_PHASE -> limit_conn_handler limit_req_handler
+    * NGX_HTTP_ACCESS_PHASE -> auth_basic_handler access_handler
+    * NGX_HTTP_POST_ACCESS_PHASE
+    * NGX_HTTP_TRY_FILES_PHASE
+    * NGX_HTTP_CONTENT_PHASE -> static_handler
+    * NGX_HTTP_LOG_PHASE -> log_handler
+
+  * Nginx Lua 插载点
+
+    * Initialization Phase
+
+      init_by_lua
+
+      init_worker_by_lua
+
+    * Rewrite / Access Phase
+
+      ssl_certificate_by_lua
+
+      set_by_lua
+
+      rewrite_by_lua
+
+      access_by_lua
+
+    * Content Phase
+
+      balancer_by_lua content_by_lua
+
+      header_filter_by_lua
+
+      body_filter_by_lua
+
+    * Log Phase
+
+      log_by_lua
+
+  * OpenResty
+
+    * init_by_lua
+
+      vim /usr/local/openresty/lua/custom_init.lua
+
+      ```lua
+      ngx.log(ngx.NOTICE, "custom init lua");
+      ```
+
+      vim /usr/local/openresty/nginx/conf/nginx.conf
+
+      ```nginx
+      init_by_lua_file ../lua/custom_init.lua;
+      ```
+
+    * content_by_lua
+
+      vim /usr/local/openresty/nginx/conf/nginx.conf
+
+      ```nginx
+      location /helloworld {
+          default_type "text/html";
+          content_by_lua_file ../lua/helloworld.lua;
+      }
+      ```
+
+      vim /usr/local/openresty/lua/helloworld.lua
+
+      ```lua
+      ngx.say("hello world lua");
+      ```
+
+    * [概览](http://openresty.org/cn/)
+
+    * openresty hello world
+
+      vim /usr/local/openresty/lua/item_2.lua
+
+      ```lua
+      ngx.exec("/item/get?id=2");
+      ```
+
+      vim /usr/local/openresty/nginx/conf/nginx.conf
+
+      ```nginx
+      location /item_2 {
+          content_by_lua_file ../lua/item_2.lua;
+      }
+      ```
+
+    * shared dic（共享内存字典，所有 worker 线程可见，LRU 淘汰）
+
+      vim /usr/local/openresty/lua/item_detail.lua
+
+      ```lua
+      function get_cache(key)
+          local ngx_cache = ngx.shared.item_detail_cache
+          local value = ngx_cache:get(key)
+          return value
+      end
+      
+      function set_cache(key,value,expire)
+          if not expire then
+              expire = 0
+          end
+          local ngx_cache = ngx.shared.item_detail_cache
+          local succ,err,forcible = ngx_cache:set(key,value,expire)
+          return succ
+      end
+      
+      local args = ngx.req.get_uri_args()
+      local id = args["id"]
+      local item_model = get_cache("item_"..id)
+      if item_model == nil then
+          local resp = ngx.location.capture("/item/get?id="..id)
+          item_model = resp.body
+          set_cache("item_"..id,item_model,60)
+      end
+      ngx.say(item_model)
+      ```
+
+      vim /usr/local/openresty/nginx/conf/nginx.conf
+
+      ```nginx
+      lua_shared_dict item_detail_cache 128m;
+      
+      location /lua/item/get {
+          default_type "application/json";
+          content_by_lua_file ../lua/item_detail.lua;
+      }
+      ```
+
+    * openresty redis 支持（master slave 模式；只读不写；下游更新 redis，脏数据影响小）
+
+      /usr/local/openresty/lualib/resty/redis.lua
+
+      vim /usr/local/openresty/lua/item_detail_redis.lua
+
+      ```lua
+      local args = ngx.req.get_uri_args()
+      local id = args["id"]
+      local redis = require "resty.redis"
+      local cache = redis:new()
+      local ok,err = cache:connect("172.24.129.189",6379)
+      local item_model = cache:get("item_"..id)
+      if item_model == ngx.null or item_model == nil then
+          local resp = ngx.location.capture("/item/get?id="..id)
+          item_model = resp.body
+      end
+      ngx.say(item_model)
+      ```
+
+      vim /usr/local/openresty/nginx/conf/nginx.conf
+
+      ```nginx
+      location /lua/item/get {
+          default_type "application/json";
+          #content_by_lua_file ../lua/item_detail.lua;
+          content_by_lua_file ../lua/item_detail_redis.lua;
+      }
+      ```
+
+  
+
 
