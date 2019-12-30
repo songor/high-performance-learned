@@ -567,4 +567,25 @@
 
   * no-store：不缓存内容
 
+* 浏览器三种刷新方式
+
+  * 回车刷新或 a 链接
+
+    看 cache control 对应的 max-age 是否有效，有效则直接使用缓存内容，否则若 cache-control 为 no-cache，则进入缓存协商逻辑
+
+  * F5 刷新或 command + R 刷新
+
+    去掉 cache-control 中的 max-age 或直接设置 max-age 为 0，然后进入缓存协商逻辑
+
+  * ctrl + F5 或 command + shift + R 刷新
+
+    去掉 cache-control 中的 max-age 或直接设置 max-age 为 0，并且去掉协商头，强制刷新
+
+* CDN 自定义缓存策略
+
+  * 自定义目录过期时间
+  * 自定义后缀名过期时间
+  * 自定义目录、后缀名对应权重
+  * 通过界面或 API 强制 CDN 刷新
+
 * 
