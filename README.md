@@ -545,4 +545,26 @@
 
 ### 页面静态化
 
-* 静态资源 CDN
+* 静态资源 CDN（content delivery network）
+
+* cache control 响应头
+
+  * private：客户端可以缓存
+
+  * public：客户端和代理服务器都可以缓存
+
+  * max-age=xxx：缓存内容将在 xxx 秒后失效
+
+  * no-cache：使用缓存内容前强制向服务端验证是否可用
+
+    * ETag & If-None-Match
+
+      ETag：资源唯一标识
+
+    * Last-modified & If-Modified-Since
+
+      List-modified：资源最后被修改的时间
+
+  * no-store：不缓存内容
+
+* 
