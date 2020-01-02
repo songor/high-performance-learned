@@ -600,4 +600,11 @@
   * 依靠异步请求获取后端节点对应资源状态
   * 通过跑批推送 CDN 内容
 
-* 
+* 全页面静态化
+
+  * html、css、js 静态资源 CDN + ajax 动态请求 CDN
+  * 在服务端完成 html、css 甚至 js 的 load 渲染成纯 html 文件后直接以静态资源的方式部署到 CDN 上
+  * [phantomjs](https://phantomjs.org/)
+    * 使用 init_view 和 get_init 方式防止多次初始化（item_detail_2.html）
+    * 轮询生成内容（item_detail_2.js）
+    * 将全静态化页面推送到 CDN（http://39.104.234.19/resources/item_detail_2.html?id=2）
