@@ -15,13 +15,18 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
+
+    private static final String USER_VALIDATE_PREFIX = "user_validate_";
 
     @Autowired
     private UserDOMapper userDOMapper;
@@ -31,6 +36,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private CustomValidator validator;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Override
     public UserModel getUserById(Integer id) {
@@ -89,6 +97,18 @@ public class UserServiceImpl implements UserService {
         } else {
             throw new BusinessException(BusinessErrorEnum.USER_LOGIN_FAIL);
         }
+    }
+
+    @Override
+    public UserModel getUserByIdInCache(Integer id) {
+        String key = USER_VALIDATE_PREFIX + id;
+        UserModel userModel = (UserModel) redisTemplate.opsForValue().get(key);
+        if (userModel == null) {
+            userModel = getUserById(id);
+            redisTemplate.opsForValue().set(key, userModel);
+            redisTemplate.expire(key, 10, TimeUnit.MINUTES);
+        }
+        return userModel;
     }
 
 }

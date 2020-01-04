@@ -10,4 +10,6 @@ public interface UserService {
 
     UserModel validateLogin(String telephone, String encryptPassword);
 
+    UserModel getUserByIdInCache(Integer id);
+
 }

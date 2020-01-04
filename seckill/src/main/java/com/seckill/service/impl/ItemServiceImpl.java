@@ -16,17 +16,21 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
 public class ItemServiceImpl implements ItemService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ItemServiceImpl.class);
+
+    private static final String ITEM_VALIDATE_PREFIX = "item_validate_";
 
     @Autowired
     private ItemDOMapper itemDOMapper;
@@ -39,6 +43,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Autowired
     private CustomValidator validator;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Transactional
     @Override
@@ -127,6 +134,18 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public void increaseSales(Integer itemId, Integer amount) {
         itemDOMapper.increaseSales(itemId, amount);
+    }
+
+    @Override
+    public ItemModel getItemByIdInCache(Integer id) {
+        String key = ITEM_VALIDATE_PREFIX + id;
+        ItemModel itemModel = (ItemModel) redisTemplate.opsForValue().get(key);
+        if (itemModel == null) {
+            itemModel = getItemById(id);
+            redisTemplate.opsForValue().set(key, itemModel);
+            redisTemplate.expire(key, 10, TimeUnit.MINUTES);
+        }
+        return itemModel;
     }
 
 }
