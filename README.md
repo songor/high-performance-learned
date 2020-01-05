@@ -608,3 +608,71 @@
     * 使用 init_view 和 get_init 方式防止多次初始化（item_detail_2.html）
     * 轮询生成内容（item_detail_2.js）
     * 将全静态化页面推送到 CDN（http://39.104.234.19/resources/item_detail_2.html?id=2）
+
+### 缓存库存
+
+* 交易验证优化（Redis）
+
+  * 用户风控策略优化
+
+  * 活动校验策略优化
+
+    引入活动发布流程，紧急下线能力
+
+* 缓存库存模型优化
+
+  * 库存行锁优化
+
+    ALTER TABLE item_stock ADD UNIQUE INDEX item_id_index (item_id);
+
+  * 扣减库存缓存化
+
+    活动发布同步库存进缓存，下单交易减缓存库存（数据库记录不一致）
+
+  * 异步同步数据库
+
+    活动发布同步库存进缓存，下单交易减缓存库存，异步消息扣减数据库库存
+
+    问题：异步消息发送失败（Producer）、扣减操作执行失败（Consumer）、正确回补库存
+
+  * 最终一致性保证
+
+* 异步消息队列 [RocketMQ](https://rocketmq.apache.org/docs/quick-start/)
+
+  * wget http://ftp.cuhk.edu.hk/pub/packages/apache.org/rocketmq/4.6.0/rocketmq-all-4.6.0-bin-release.zip
+
+    yum install unzip
+
+    unzip rocketmq-all-4.6.0-bin-release.zip
+
+  * vim runserver.sh & vim runbroker.sh & vim tools.sh 修改 JAVA_OPT
+
+    nohup sh bin/mqnamesrv &
+
+    nohup sh bin/mqbroker -n localhost:9876 &
+
+  * export NAMESRV_ADDR=localhost:9876
+
+    sh bin/tools.sh org.apache.rocketmq.example.quickstart.Producer
+
+    sh bin/tools.sh org.apache.rocketmq.example.quickstart.Consumer
+
+  * vim tools.sh -> 修改 JAVA_OPT="${JAVA_OPT} -Djava.ext.dirs=${BASE_DIR}/lib:${JAVA_HOME}/jre/lib/ext:/usr/java/jdk1.8.0_212-amd64/jre/lib/ext"
+
+    ./mqadmin updateTopic -n localhost:9876 -t seckill_stock -c DefaultCluster
+
+  * 配置安全组规则，添加 9876/9876 和 10911/10911
+
+  * windows
+
+    配置环境变量 ROCKETMQ_HOME
+
+    start mqnamesrv.cmd
+
+    修改 runbroker.cmd -> set "JAVA_OPT=%JAVA_OPT% -cp "%CLASSPATH%""
+
+    start mqbroker.cmd -n 127.0.0.1:9876 autoCreateTopicEnable=true
+
+    start mqadmin updateTopic -n localhost:9876 -t seckill_stock -c DefaultCluster
+
+* 分布式事务（ACID、CAP、BASE）

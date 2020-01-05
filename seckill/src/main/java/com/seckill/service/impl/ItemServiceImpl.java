@@ -8,6 +8,7 @@ import com.seckill.error.BusinessErrorEnum;
 import com.seckill.error.BusinessException;
 import com.seckill.model.ItemModel;
 import com.seckill.model.PromoModel;
+import com.seckill.rocketmq.StockProducer;
 import com.seckill.service.ItemService;
 import com.seckill.service.PromoService;
 import com.seckill.validator.CustomValidator;
@@ -46,6 +47,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private StockProducer stockProducer;
 
     @Transactional
     @Override
@@ -125,8 +129,14 @@ public class ItemServiceImpl implements ItemService {
 //        int affectedCount = itemStockDOMapper.decreaseStock(itemId, amount);
         long remaining = redisTemplate.opsForValue().increment("promo_item_stock_" + itemId, -1 * amount);
         if (remaining >= 0) {
+            boolean result = stockProducer.asyncDecrease(itemId, amount);
+            if (!result) {
+                redisTemplate.opsForValue().increment("promo_item_stock_" + itemId, amount);
+                return false;
+            }
             return true;
         } else {
+            redisTemplate.opsForValue().increment("promo_item_stock_" + itemId, amount);
             return false;
         }
     }
