@@ -122,8 +122,9 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Override
     public boolean decreaseStock(Integer itemId, Integer amount) {
-        int affectedCount = itemStockDOMapper.decreaseStock(itemId, amount);
-        if (affectedCount > 0) {
+//        int affectedCount = itemStockDOMapper.decreaseStock(itemId, amount);
+        long remaining = redisTemplate.opsForValue().increment("promo_item_stock_" + itemId, -1 * amount);
+        if (remaining >= 0) {
             return true;
         } else {
             return false;

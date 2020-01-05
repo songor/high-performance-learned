@@ -2,12 +2,15 @@ package com.seckill.service.impl;
 
 import com.seckill.dao.PromoDOMapper;
 import com.seckill.dataobject.PromoDO;
+import com.seckill.model.ItemModel;
 import com.seckill.model.PromoModel;
+import com.seckill.service.ItemService;
 import com.seckill.service.PromoService;
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -21,6 +24,12 @@ public class PromoServiceImpl implements PromoService {
 
     @Autowired
     private PromoDOMapper promoDOMapper;
+
+    @Autowired
+    private ItemService itemService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Override
     public PromoModel getPromoByItemId(Integer itemId) {
@@ -51,6 +60,16 @@ public class PromoServiceImpl implements PromoService {
         }
 
         return promoModel;
+    }
+
+    @Override
+    public void publish(Integer promoId) {
+        PromoDO promoDO = promoDOMapper.selectByPrimaryKey(promoId);
+        if (promoDO == null || promoDO.getItemId() == null || promoDO.getItemId() == 0) {
+            return;
+        }
+        ItemModel itemModel = itemService.getItemById(promoDO.getItemId());
+        redisTemplate.opsForValue().set("promo_item_stock_" + itemModel.getId(), itemModel.getStock());
     }
 
 }
