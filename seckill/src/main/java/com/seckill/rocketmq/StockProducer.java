@@ -9,10 +9,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+
+//import javax.annotation.PostConstruct;
 
 @Component
 public class StockProducer {
@@ -27,7 +28,7 @@ public class StockProducer {
 
     private DefaultMQProducer producer;
 
-    @PostConstruct
+    //    @PostConstruct
     public void init() throws MQClientException {
         producer = new DefaultMQProducer("stock_producer_group");
         producer.setNamesrvAddr(namesrvAddr);

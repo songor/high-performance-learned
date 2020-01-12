@@ -14,8 +14,14 @@ public interface ItemService {
 
     boolean decreaseStock(Integer itemId, Integer amount);
 
+    boolean asyncDecreaseStock(Integer itemId, Integer amount);
+
+    boolean increaseStock(Integer itemId, Integer amount);
+
     void increaseSales(Integer itemId, Integer amount);
 
     ItemModel getItemByIdInCache(Integer id);
+
+    String initStockLog(Integer itemId, Integer amount);
 
 }

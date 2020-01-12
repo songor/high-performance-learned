@@ -2,8 +2,10 @@ package com.seckill.service.impl;
 
 import com.seckill.dao.ItemDOMapper;
 import com.seckill.dao.ItemStockDOMapper;
+import com.seckill.dao.StockLogDOMapper;
 import com.seckill.dataobject.ItemDO;
 import com.seckill.dataobject.ItemStockDO;
+import com.seckill.dataobject.StockLogDO;
 import com.seckill.error.BusinessErrorEnum;
 import com.seckill.error.BusinessException;
 import com.seckill.model.ItemModel;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -50,6 +53,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Autowired
     private StockProducer stockProducer;
+
+    @Autowired
+    private StockLogDOMapper stockLogDOMapper;
 
     @Transactional
     @Override
@@ -123,22 +129,42 @@ public class ItemServiceImpl implements ItemService {
         return itemModelList;
     }
 
-    @Transactional
+    //    @Transactional
     @Override
     public boolean decreaseStock(Integer itemId, Integer amount) {
 //        int affectedCount = itemStockDOMapper.decreaseStock(itemId, amount);
         long remaining = redisTemplate.opsForValue().increment("promo_item_stock_" + itemId, -1 * amount);
-        if (remaining >= 0) {
-            boolean result = stockProducer.asyncDecrease(itemId, amount);
-            if (!result) {
-                redisTemplate.opsForValue().increment("promo_item_stock_" + itemId, amount);
-                return false;
-            }
+//        if (remaining >= 0) {
+        /**
+         * （1）如果 createOrder() 方法抛出异常，已经执行的 asyncDecrease() 方法无法回滚，因此在 createOrder() 方法 commit 之后，
+         * 再执行 asyncDecrease() 方法
+         */
+//            boolean result = stockProducer.asyncDecrease(itemId, amount);
+//            if (!result) {
+//                redisTemplate.opsForValue().increment("promo_item_stock_" + itemId, amount);
+//                return false;
+//            }
+//            return true;
+        if (remaining > 0) {
+            return true;
+        } else if (remaining == 0) {
+            // 库存售罄
+            redisTemplate.opsForValue().set("promo_item_stock_invalid_" + itemId, "true");
             return true;
         } else {
-            redisTemplate.opsForValue().increment("promo_item_stock_" + itemId, amount);
             return false;
         }
+    }
+
+    @Override
+    public boolean asyncDecreaseStock(Integer itemId, Integer amount) {
+        return stockProducer.asyncDecrease(itemId, amount);
+    }
+
+    @Override
+    public boolean increaseStock(Integer itemId, Integer amount) {
+        redisTemplate.opsForValue().increment("promo_item_stock_" + itemId, amount);
+        return true;
     }
 
     @Transactional
@@ -157,6 +183,18 @@ public class ItemServiceImpl implements ItemService {
             redisTemplate.expire(key, 10, TimeUnit.MINUTES);
         }
         return itemModel;
+    }
+
+    @Transactional
+    @Override
+    public String initStockLog(Integer itemId, Integer amount) {
+        StockLogDO stockLogDO = new StockLogDO();
+        stockLogDO.setStockLogId(UUID.randomUUID().toString().replace("-", ""));
+        stockLogDO.setItemId(itemId);
+        stockLogDO.setAmount(amount);
+        stockLogDO.setStatus(1);
+        stockLogDOMapper.insertSelective(stockLogDO);
+        return stockLogDO.getStockLogId();
     }
 
 }

@@ -8,7 +8,9 @@ public enum BusinessErrorEnum implements CommonError {
     USER_LOGIN_FAIL(20002, "手机号或密码错误"),
     USER_NOT_LOGIN(20003, "用户未登陆"),
     ITEM_NON_EXIST(30001, "商品不存在"),
-    STOCK_NON_ENOUGH(30002, "库存不足");
+    STOCK_NON_ENOUGH(30002, "库存不足"),
+    ASYNC_STOCK_FAIL(40001, "异步同步库存失败"),
+    CREATE_ORDER_FAIL(40002, "下单失败");
 
     private int errorCode;
 

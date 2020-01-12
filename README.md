@@ -676,3 +676,23 @@
     start mqadmin updateTopic -n localhost:9876 -t seckill_stock -c DefaultCluster
 
 * 分布式事务（ACID、CAP、BASE）
+
+* 业务系统热点问题（TODO）
+
+### 事务型消息
+
+* [RocketMQ transaction example](https://rocketmq.apache.org/docs/transaction-example/)
+
+* 库存流水
+
+  * 数据类型
+    * 主业务数据 master data
+    * 操作型数据 log data -> 异步操作
+
+  * 业务场景决定高可用技术
+  
+    少卖 / 超卖 -> Redis 失效不回源 / 回源数据库
+  
+  * 库存售罄
+
+* 销量逻辑异步化 / 下单逻辑异步化

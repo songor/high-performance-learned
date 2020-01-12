@@ -75,6 +75,13 @@
         <!--               enableUpdateByExample="false"-->
         <!--               selectByExampleQueryId="false"/>-->
 
+        <!--        <table tableName="STOCK_LOG" domainObjectName="StockLogDO"-->
+        <!--               enableSelectByExample="false"-->
+        <!--               enableDeleteByExample="false"-->
+        <!--               enableCountByExample="false"-->
+        <!--               enableUpdateByExample="false"-->
+        <!--               selectByExampleQueryId="false"/>-->
+
     </context>
 
 </generatorConfiguration>

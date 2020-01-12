@@ -2,8 +2,10 @@ package com.seckill.service.impl;
 
 import com.seckill.dao.OrderDOMapper;
 import com.seckill.dao.SequenceDOMapper;
+import com.seckill.dao.StockLogDOMapper;
 import com.seckill.dataobject.OrderDO;
 import com.seckill.dataobject.SequenceDO;
+import com.seckill.dataobject.StockLogDO;
 import com.seckill.error.BusinessErrorEnum;
 import com.seckill.error.BusinessException;
 import com.seckill.model.ItemModel;
@@ -19,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -41,9 +45,12 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private OrderDOMapper orderDOMapper;
 
+    @Autowired
+    private StockLogDOMapper stockLogDOMapper;
+
     @Transactional
     @Override
-    public OrderModel createOrder(Integer userId, Integer itemId, Integer amount, Integer promoId) {
+    public OrderModel createOrder(Integer userId, Integer itemId, Integer amount, Integer promoId, String stockLogId) {
         if (amount <= 0 || amount > 99) {
             throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "购买数量不合法");
         }
@@ -95,6 +102,34 @@ public class OrderServiceImpl implements OrderService {
         orderDOMapper.insertSelective(orderDO);
 
         itemService.increaseSales(itemId, amount);
+
+        /**
+         * （2）在方法最后发送异步更新库存 -> Spring Transaction 在 return 后才提交，如果 commit 失败，仍然会超扣库存
+         */
+//        boolean result = itemService.asyncDecreaseStock(itemId, amount);
+//        if (!result) {
+//            itemService.increaseStock(itemId, amount);
+//            throw new BusinessException(BusinessErrorEnum.ASYNC_STOCK_FAIL);
+//        }
+
+        /**
+         * （3）异步更新库存可能会失败，造成不一致，因此引入 Rocket MQ Transaction 事务
+         */
+//        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+//            @Override
+//            public void afterCommit() {
+//                boolean result = itemService.asyncDecreaseStock(itemId, amount);
+//                if (!result) {
+//                    itemService.increaseStock(itemId, amount);
+//                    throw new BusinessException(BusinessErrorEnum.ASYNC_STOCK_FAIL);
+//                }
+//            }
+//        });
+
+        // 设置库存流水状态
+        StockLogDO stockLogDO = stockLogDOMapper.selectByPrimaryKey(stockLogId);
+        stockLogDO.setStatus(2);
+        stockLogDOMapper.updateByPrimaryKeySelective(stockLogDO);
 
         return orderModel;
     }
