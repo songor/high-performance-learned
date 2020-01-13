@@ -8,4 +8,6 @@ public interface PromoService {
 
     void publish(Integer promoId);
 
+    String generateSecKillToken(Integer userId, Integer itemId, Integer promoId);
+
 }

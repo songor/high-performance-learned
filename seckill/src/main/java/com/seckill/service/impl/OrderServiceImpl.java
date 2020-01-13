@@ -10,7 +10,6 @@ import com.seckill.error.BusinessErrorEnum;
 import com.seckill.error.BusinessException;
 import com.seckill.model.ItemModel;
 import com.seckill.model.OrderModel;
-import com.seckill.model.UserModel;
 import com.seckill.service.ItemService;
 import com.seckill.service.OrderService;
 import com.seckill.service.UserService;
@@ -21,12 +20,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+
+//import com.seckill.model.UserModel;
+//import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+//import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -55,23 +56,23 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "购买数量不合法");
         }
 //        UserModel userModel = userService.getUserById(userId);
-        UserModel userModel = userService.getUserByIdInCache(userId);
-        if (userModel == null) {
-            throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "用户不存在");
-        }
+//        UserModel userModel = userService.getUserByIdInCache(userId);
+//        if (userModel == null) {
+//            throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "用户不存在");
+//        }
 //        ItemModel itemModel = itemService.getItemById(itemId);
         ItemModel itemModel = itemService.getItemByIdInCache(itemId);
-        if (itemModel == null) {
-            throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "商品不存在");
-        }
-        if (promoId != null) {
-            if (itemModel.getPromoModel() == null || promoId != itemModel.getPromoModel().getId()) {
-                throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "秒杀不存在");
-            }
-            if (itemModel.getPromoModel().getStatus() != 2) {
-                throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "秒杀未开始");
-            }
-        }
+//        if (itemModel == null) {
+//            throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "商品不存在");
+//        }
+//        if (promoId != null) {
+//            if (itemModel.getPromoModel() == null || promoId != itemModel.getPromoModel().getId()) {
+//                throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "秒杀不存在");
+//            }
+//            if (itemModel.getPromoModel().getStatus() != 2) {
+//                throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "秒杀未开始");
+//            }
+//        }
 
         if (!itemService.decreaseStock(itemId, amount)) {
             throw new BusinessException(BusinessErrorEnum.STOCK_NON_ENOUGH);

@@ -10,7 +10,9 @@ public enum BusinessErrorEnum implements CommonError {
     ITEM_NON_EXIST(30001, "商品不存在"),
     STOCK_NON_ENOUGH(30002, "库存不足"),
     ASYNC_STOCK_FAIL(40001, "异步同步库存失败"),
-    CREATE_ORDER_FAIL(40002, "下单失败");
+    CREATE_ORDER_FAIL(40002, "下单失败"),
+    GENERATE_PROMO_TOKEN_FAIL(40003, "生成秒杀令牌失败"),
+    PROMO_TOKEN_VALIDATION_ERROR(40004, "秒杀令牌校验失败");
 
     private int errorCode;
 

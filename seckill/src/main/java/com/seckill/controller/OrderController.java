@@ -7,6 +7,7 @@ import com.seckill.response.CommonReturnType;
 import com.seckill.rocketmq.StockTransactionProducer;
 import com.seckill.service.ItemService;
 import com.seckill.service.OrderService;
+import com.seckill.service.PromoService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -34,11 +35,15 @@ public class OrderController {
     @Autowired
     private ItemService itemService;
 
+    @Autowired
+    private PromoService promoService;
+
     @PostMapping("/create")
     public CommonReturnType createOrder(@RequestParam("itemId") Integer itemId,
                                         @RequestParam("amount") Integer amount,
                                         @RequestParam(value = "promoId", required = false) Integer promoId,
-                                        @RequestParam("token") String token) {
+                                        @RequestParam("token") String token,
+                                        @RequestParam(value = "promoToken", required = false) String promoToken) {
 //        Boolean isLogin = (Boolean) request.getSession().getAttribute("IS_LOGIN");
 //        if (isLogin == null || !isLogin.booleanValue()) {
 //            throw new BusinessException(BusinessErrorEnum.USER_NOT_LOGIN);
@@ -54,6 +59,16 @@ public class OrderController {
             throw new BusinessException(BusinessErrorEnum.USER_NOT_LOGIN);
         }
 
+        if (promoId != null) {
+            String promoTokenInRedis = (String) redisTemplate.opsForValue().get("promo_token_" + userModel.getId() + "_" + itemId + "_" + promoId);
+            if (promoTokenInRedis == null) {
+                throw new BusinessException(BusinessErrorEnum.PROMO_TOKEN_VALIDATION_ERROR);
+            }
+            if (!StringUtils.equals(promoToken, promoTokenInRedis)) {
+                throw new BusinessException(BusinessErrorEnum.PROMO_TOKEN_VALIDATION_ERROR);
+            }
+        }
+
         if (redisTemplate.hasKey("promo_item_stock_invalid_" + itemId)) {
             throw new BusinessException(BusinessErrorEnum.STOCK_NON_ENOUGH);
         }
@@ -67,6 +82,27 @@ public class OrderController {
             throw new BusinessException(BusinessErrorEnum.CREATE_ORDER_FAIL, "未知错误");
         }
         return CommonReturnType.create("Order created");
+    }
+
+    @PostMapping("/token/generate")
+    public CommonReturnType generateToken(@RequestParam("itemId") Integer itemId,
+                                          @RequestParam(value = "promoId") Integer promoId,
+                                          @RequestParam("token") String token) {
+        if (StringUtils.isEmpty(token)) {
+            throw new BusinessException(BusinessErrorEnum.USER_NOT_LOGIN);
+        }
+
+        UserModel userModel = (UserModel) redisTemplate.opsForValue().get(token);
+        if (userModel == null) {
+            throw new BusinessException(BusinessErrorEnum.USER_NOT_LOGIN);
+        }
+
+        String promoToken = promoService.generateSecKillToken(userModel.getId(), itemId, promoId);
+        if (promoToken == null) {
+            throw new BusinessException(BusinessErrorEnum.GENERATE_PROMO_TOKEN_FAIL);
+        }
+
+        return CommonReturnType.create(promoToken);
     }
 
 }
