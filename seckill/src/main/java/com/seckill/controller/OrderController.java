@@ -13,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
+import java.util.concurrent.*;
+
 //import javax.servlet.http.HttpServletRequest;
 
 @CrossOrigin(allowCredentials = "true", allowedHeaders = "*")
@@ -37,6 +40,13 @@ public class OrderController {
 
     @Autowired
     private PromoService promoService;
+
+    private ExecutorService executorService;
+
+    @PostConstruct
+    public void init() {
+        executorService = Executors.newFixedThreadPool(20);
+    }
 
     @PostMapping("/create")
     public CommonReturnType createOrder(@RequestParam("itemId") Integer itemId,
@@ -76,14 +86,23 @@ public class OrderController {
 //            throw new BusinessException(BusinessErrorEnum.STOCK_NON_ENOUGH);
 //        }
 
-        // 库存流水
-        String stockLogId = itemService.initStockLog(itemId, amount);
-
-//        orderService.createOrder(userModel.getId(), itemId, amount, promoId);
-        boolean result = producer.transactionAsyncDecreaseStock(userModel.getId(), itemId, amount, promoId, stockLogId);
-        if (!result) {
-            throw new BusinessException(BusinessErrorEnum.CREATE_ORDER_FAIL, "未知错误");
+        // 队列泄洪
+        Future<Boolean> future = executorService.submit(() -> {
+            // 库存流水
+            String stockLogId = itemService.initStockLog(itemId, amount);
+            return producer.transactionAsyncDecreaseStock(userModel.getId(), itemId, amount, promoId, stockLogId);
+        });
+        try {
+            boolean result = future.get();
+            if (!result) {
+                throw new BusinessException(BusinessErrorEnum.CREATE_ORDER_FAIL, "未知错误");
+            }
+        } catch (InterruptedException e) {
+            throw new BusinessException(BusinessErrorEnum.UNKNOWN_ERROR);
+        } catch (ExecutionException e) {
+            throw new BusinessException(BusinessErrorEnum.UNKNOWN_ERROR);
         }
+
         return CommonReturnType.create("Order created");
     }
 
