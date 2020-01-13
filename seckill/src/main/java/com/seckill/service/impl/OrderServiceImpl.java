@@ -12,6 +12,7 @@ import com.seckill.model.ItemModel;
 import com.seckill.model.OrderModel;
 import com.seckill.service.ItemService;
 import com.seckill.service.OrderService;
+import com.seckill.service.PromoService;
 import com.seckill.service.UserService;
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
@@ -56,12 +57,18 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "购买数量不合法");
         }
 //        UserModel userModel = userService.getUserById(userId);
+        /**
+         * 前置到 {@link PromoService#generateSecKillToken}
+         */
 //        UserModel userModel = userService.getUserByIdInCache(userId);
 //        if (userModel == null) {
 //            throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "用户不存在");
 //        }
 //        ItemModel itemModel = itemService.getItemById(itemId);
         ItemModel itemModel = itemService.getItemByIdInCache(itemId);
+        /**
+         * 前置到 {@link PromoService#generateSecKillToken}
+         */
 //        if (itemModel == null) {
 //            throw new BusinessException(BusinessErrorEnum.PARAMETER_VALIDATION_ERROR, "商品不存在");
 //        }

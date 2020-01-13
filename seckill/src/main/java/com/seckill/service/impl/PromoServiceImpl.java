@@ -77,10 +77,16 @@ public class PromoServiceImpl implements PromoService {
         }
         ItemModel itemModel = itemService.getItemById(promoDO.getItemId());
         redisTemplate.opsForValue().set("promo_item_stock_" + itemModel.getId(), itemModel.getStock());
+        // 秒杀大闸
+        redisTemplate.opsForValue().set("promo_door_" + promoId, itemModel.getStock() * 5);
     }
 
     @Override
     public String generateSecKillToken(Integer userId, Integer itemId, Integer promoId) {
+        if (redisTemplate.hasKey("promo_item_stock_invalid_" + itemId)) {
+            return null;
+        }
+
         UserModel userModel = userService.getUserByIdInCache(userId);
         if (userModel == null) {
             return null;
@@ -111,6 +117,12 @@ public class PromoServiceImpl implements PromoService {
         if (status != 2) {
             return null;
         }
+
+        long result = redisTemplate.opsForValue().increment("promo_door_" + promoId, -1);
+        if (result < 0) {
+            return null;
+        }
+
         String token = UUID.randomUUID().toString().replace("-", "");
         String key = "promo_token_" + userId + "_" + itemId + "_" + promoId;
         redisTemplate.opsForValue().set(key, token);

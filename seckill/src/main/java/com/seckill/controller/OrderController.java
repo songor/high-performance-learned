@@ -69,9 +69,12 @@ public class OrderController {
             }
         }
 
-        if (redisTemplate.hasKey("promo_item_stock_invalid_" + itemId)) {
-            throw new BusinessException(BusinessErrorEnum.STOCK_NON_ENOUGH);
-        }
+        /**
+         * 前置到 {@link PromoService#generateSecKillToken}
+         */
+//        if (redisTemplate.hasKey("promo_item_stock_invalid_" + itemId)) {
+//            throw new BusinessException(BusinessErrorEnum.STOCK_NON_ENOUGH);
+//        }
 
         // 库存流水
         String stockLogId = itemService.initStockLog(itemId, amount);
