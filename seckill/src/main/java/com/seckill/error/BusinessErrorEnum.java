@@ -12,7 +12,9 @@ public enum BusinessErrorEnum implements CommonError {
     ASYNC_STOCK_FAIL(40001, "异步同步库存失败"),
     CREATE_ORDER_FAIL(40002, "下单失败"),
     GENERATE_PROMO_TOKEN_FAIL(40003, "生成秒杀令牌失败"),
-    PROMO_TOKEN_VALIDATION_ERROR(40004, "秒杀令牌校验失败");
+    PROMO_TOKEN_VALIDATION_ERROR(40004, "秒杀令牌校验失败"),
+    VERIFY_CODE_VALIDATION_ERROR(40005, "验证码校验失败"),
+    RATE_LIMIT(40006, "请稍后再试");
 
     private int errorCode;
 

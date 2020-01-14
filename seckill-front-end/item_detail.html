@@ -61,6 +61,11 @@
         <button class="btn blue" id="create-order" type="submit">下单</button>
 		<button class="btn blue" id="back" type="submit">返回</button>
 	</div>
+	<div class="form-actions" id="verify-div" style="display:none;">
+        <img src=""/>
+		<input type="text" id="verify-content" value=""/>
+        <button class="btn blue" id="verify-button" type="submit">验证</button>
+	</div>
 </div>
 <input type="hidden" id="is_init" value="0" />
 </body>
@@ -113,13 +118,24 @@
 			alert("下单失败，用户未登录");
 			window.location.href = "login.html";
 		}
+		$("#verify-div img").attr("src", "http://" + global_host + "/order/code/generate?token=" + token);
+		$("#verify-div").show();
+	});
+
+	$("#verify-button").on("click", function () {
+		var token = window.localStorage["token"];
+		if (token == null) {
+			alert("下单失败，用户未登录");
+			window.location.href = "login.html";
+		}
 		$.ajax({
 			type: "POST",
 			url: "http://" + global_host + "/order/token/generate?token=" + token,
 			contentType: "application/x-www-form-urlencoded",
 			data: {
 				"itemId": item.id,
-				"promoId": item.promoId
+				"promoId": item.promoId,
+				"verifyCode": $("#verify-content").val()
 			},
 			xhrFields: {
 				withCredentials: true
