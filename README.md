@@ -1024,3 +1024,41 @@
       master 和 slave 无法保证强一致性
 
       undo / redo log 成功，bin log 失败，bin log 无法真实反映 master 情况
+
+### MySQL 分布式架构
+
+* 主从性能优化
+
+  备份；读写分离
+
+  半同步机制
+
+* 多主多从
+
+  * 数据分片
+
+    hash + mod
+
+  * 分片维度
+
+    尽可能保证一次查询请求几乎命中在一个数据库上
+
+    固定路由位（user_id）
+
+    时间自增分片（月、年）
+
+  * 分片冗余一致性保障
+
+    application -> 用户订单 -> RocketMQ -> 商户订单
+
+  * 无迁移扩展
+
+    mod 位数据迁移
+
+    弹性自增 -> 在原本的路由规则之上添加另外一套路由规则，如 order_id 时间戳 > 2020.01.01
+
+* ACID，CAP，BASE
+
+  * master slave -> AP
+  * master slave semi sync（二阶段提交，事务协调者 + 多事务处理接收者）-> CP
+  * zookeeper -> 单调一致性（半数以上节点一致 / 可用）
