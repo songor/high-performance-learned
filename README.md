@@ -919,3 +919,61 @@
   限流（Guava RateLimiter）
 
   防黄牛
+
+### 登录态管理
+
+* 分布式会话持久性管理（redis cluster、redis 集群）
+
+  * 会话有效期
+
+    Tomcat 默认为 30 分钟
+
+    不与服务端发生交互的呆滞时间
+
+  * 会话续命
+
+    触发操作延长生命周期
+
+    延长到 30 分钟
+
+  * 安全性管理
+
+    url query string，GET 请求参数 -> token 暴露在 URL 上，不安全
+
+    自定义 header -> 仍然是明文传输，不安全
+
+    用安全传输的 https -> 仅保证数据加密传输，无法解决浏览器端调试而盗取用户请求内容，模拟用户操作
+
+    自定义协议 -> 由于无法调试 app，只能通过抓包，而自定义协议报文可能为二进制，使得无法被解析
+
+* 强登录态与弱登录态
+
+  * 强登录态（下单）
+
+  * 无需登录（浏览）
+
+  * 弱登录态（同时支持游客模式和登录模式）
+
+    场景：千人千面的智能推荐
+
+    续命能力：请求续命、Keepalive 续命
+
+* SSO 单点登录
+
+  非同域名下，访问手机 H5 wap application 和 PC 网站 application 会携带不同的 cookie_id，因此引入 SSO
+
+  * 同域名
+
+    www.app.com/wap/** 和 www.app.com/pc** -> 只需要确保使用相同的 cookie 存储
+
+  * 根域名相同而子域名不同
+
+    wap.app.com 和 www.app.com -> domain=/
+
+  * 域名不相同
+
+    app.com 和 bpp.com -> 引入 SSO 服务鉴权 sso_cookie
+
+* 小结
+
+  * OAuth 2.0
