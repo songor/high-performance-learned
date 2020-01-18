@@ -977,3 +977,50 @@
 * 小结
 
   * OAuth 2.0
+
+### MySQL 性能优化
+
+* 通用性能优化
+
+  缓存、异步、批处理
+
+* MySQL 应用性能优化
+
+  * 写操作（批量 insert，批量 update）
+
+    sql 编译 n 次和 1 次的时间与空间复杂度
+
+    网络消耗的时间复杂度
+
+    磁盘寻址的复杂度
+
+  * 读操作（索引）
+
+  * 搜索
+
+    模糊查询 like '%%' -> 搜索引擎
+
+* MySQL 单机配置性能优化（4 核 8G）
+
+  * max_connection=1000
+  * write ahead log（undo / redo log）
+    * innodb_file_per_table=1（寻址，data file）
+    * innodb_buffer_pool_size=6G（60% - 80%，data buffer）
+    * innodb_log_file_size=256M（undo / redo log）
+    * innodb_log_buffer_size=16M（undo / redo buffer）
+    * innodb_flush_log_at_trx_commit=2
+    * innodb_data_file_path=ibdata1:1G;ibdata2:1G;ibdata3:1G:autoextend
+
+* MySQL 分布式配置性能优化
+
+  * 主从扩展
+
+    * 实现
+
+      开启 bin_log；设置主从同步账号，配置主从同步
+
+    * 主从切换问题
+
+      master 和 slave 无法保证强一致性
+
+      undo / redo log 成功，bin log 失败，bin log 无法真实反映 master 情况
